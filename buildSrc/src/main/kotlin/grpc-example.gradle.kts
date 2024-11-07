@@ -1,6 +1,9 @@
+import com.google.protobuf.gradle.id
+
 plugins {
     idea
     application
+    id("com.google.protobuf")
 }
 
 group = "ru.goncharenko.examples"
@@ -42,4 +45,22 @@ tasks.named("run").configure {
     enabled = false
     group = "other"
     description = "Run the example Client or Server instead"
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.5"
+    }
+    plugins {
+        id("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.68.1"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                id("grpc") { }
+            }
+        }
+    }
 }
