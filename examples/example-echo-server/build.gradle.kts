@@ -1,0 +1,3 @@
+plugins {
+    `grpc-example`
+}
