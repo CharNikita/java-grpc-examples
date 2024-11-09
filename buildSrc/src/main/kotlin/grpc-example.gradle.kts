@@ -31,18 +31,50 @@ dependencies {
     implementation("ch.qos.logback:logback-core:1.2.3")
 }
 
-tasks.register<JavaExec>("runServer") {
-    group = "application"
-    description = "Run the example Server"
-    mainClass.set("ru.goncharenko.examples.server.App")
-    classpath = sourceSets["main"].runtimeClasspath + project.files("$rootDir/buildSrc/src/main/resources")
+val app = mapOf(
+    "Server" to "ru.goncharenko.examples.server.App",
+    "Client" to "ru.goncharenko.examples.client.App",
+)
+
+app.forEach { (appName, mainClassName) ->
+    tasks.register<CreateStartScripts>("create${appName}StartScripts") {
+        mainClass.set(mainClassName)
+        applicationName = appName
+        outputDir = file("build/scripts$appName")
+        classpath = files(tasks.named("jar")) + sourceSets["main"].runtimeClasspath
+    }
+    tasks.register<JavaExec>("run${appName}") {
+        group = "application"
+        description = "Run the $appName example"
+        mainClass.set(mainClassName)
+        classpath = sourceSets["main"].runtimeClasspath + project.files("$rootDir/buildSrc/src/main/resources")
+    }
 }
 
-tasks.register<JavaExec>("runClient") {
-    group = "application"
-    description = "Run the example Client"
-    mainClass.set("ru.goncharenko.examples.client.App")
-    classpath = sourceSets["main"].runtimeClasspath + project.files("$rootDir/buildSrc/src/main/resources")
+distributions {
+    app.forEach { (appName, _) ->
+        create(appName) {
+            distributionBaseName.set(appName)
+            contents {
+                from(tasks.named("create${appName}StartScripts")) {
+                    into("bin")
+                }
+                from(tasks.named("jar")) {
+                    into("lib")
+                }
+                from(configurations.runtimeClasspath) {
+                    into("lib")
+                }
+            }
+        }
+    }
+}
+
+tasks.named("assemble") {
+    dependsOn(
+        tasks.named("ServerDistTar"),
+        tasks.named("ClientDistTar"),
+    )
 }
 
 tasks.named("run").configure {
