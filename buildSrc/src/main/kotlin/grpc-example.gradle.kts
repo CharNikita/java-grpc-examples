@@ -25,20 +25,24 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:1.68.1")
     implementation("io.grpc:grpc-stub:1.68.1")
     compileOnly("org.apache.tomcat:annotations-api:6.0.53")
+
+    // logging
+    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("ch.qos.logback:logback-core:1.2.3")
 }
 
 tasks.register<JavaExec>("runServer") {
     group = "application"
     description = "Run the example Server"
     mainClass.set("ru.goncharenko.examples.server.App")
-    classpath = sourceSets["main"].runtimeClasspath
+    classpath = sourceSets["main"].runtimeClasspath + project.files("$rootDir/buildSrc/src/main/resources")
 }
 
 tasks.register<JavaExec>("runClient") {
     group = "application"
     description = "Run the example Client"
     mainClass.set("ru.goncharenko.examples.client.App")
-    classpath = sourceSets["main"].runtimeClasspath
+    classpath = sourceSets["main"].runtimeClasspath + project.files("$rootDir/buildSrc/src/main/resources")
 }
 
 tasks.named("run").configure {
