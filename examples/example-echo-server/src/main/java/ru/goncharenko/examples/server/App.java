@@ -1,15 +1,17 @@
 package ru.goncharenko.examples.server;
 
-import io.grpc.ServerBuilder;
-
 import java.io.IOException;
+import java.util.List;
 
 public class App {
     public static void main(String[] args) throws IOException, InterruptedException {
-        ServerBuilder.forPort(8080)
-            .addService(new EchoService())
-            .build()
-            .start()
-            .awaitTermination();
+        final var grpcServer = new GrpcServer(
+            List.of(
+                new EchoService()
+            )
+        );
+
+        grpcServer.start();
+        grpcServer.blockAwaitTermination();
     }
 }
